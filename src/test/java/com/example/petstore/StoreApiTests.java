@@ -76,4 +76,54 @@ public class StoreApiTests extends BaseTest {
                 .then()
                 .statusCode(anyOf(is(404), is(400)));
     }
+    // NEGATIVE TESTS
+    @Test
+    @DisplayName("NEGATIVE: GET /store/order/{orderId} с id вне диапазона → 400/404")
+    void getOrderWithOutOfRangeId() {
+        long badId = 9999;
+
+        given()
+                .pathParam("orderId", badId)
+                .when()
+                .get("/store/order/{orderId}")
+                .then()
+                .statusCode(anyOf(is(400), is(404)));
+    }
+
+    @Test
+    @DisplayName("NEGATIVE: DELETE /store/order/{orderId} с отрицательным id → 400")
+    void deleteOrderWithNegativeId() {
+        long badId = -1;
+
+        given()
+                .pathParam("orderId", badId)
+                .when()
+                .delete("/store/order/{orderId}")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    @DisplayName("NEGATIVE: POST /store/order с некорректным телом → 400")
+    void createOrderWithInvalidBody() {
+        String badOrderJson = """
+            {
+              "id": -1,
+              "petId": -123,
+              "quantity": -5,
+              "shipDate": "not-a-date",
+              "status": "bad-status",
+              "complete": true
+            }
+            """;
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(badOrderJson)
+                .when()
+                .post("/store/order")
+                .then()
+                .statusCode(400);
+    }
 }
+

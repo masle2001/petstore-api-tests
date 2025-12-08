@@ -116,4 +116,52 @@ public class PetApiTests extends BaseTest {
                 .body("$", is(not(empty())))
                 .body("status", everyItem(isIn(List.of("available", "pending", "sold"))));
     }
+
+    //   NEGATIVE TESTS
+    @Test
+    @DisplayName("NEGATIVE: GET /pet/{petId} с нечисловым id → 400/404")
+    void getPetWithNonNumericId() {
+        given()
+                .pathParam("petId", "not-a-number")
+                .when()
+                .get("/pet/{petId}")
+                .then()
+                .statusCode(anyOf(is(400), is(404)));
+    }
+
+    @Test
+    @DisplayName("NEGATIVE: GET /pet/{petId} с несуществующим id → 404/400")
+    void getPetWithNonExistingId() {
+        long nonExistingId = 999_999_999_999L;
+
+        given()
+                .pathParam("petId", nonExistingId)
+                .when()
+                .get("/pet/{petId}")
+                .then()
+                .statusCode(anyOf(is(404), is(400)));
+    }
+
+    @Test
+    @DisplayName("NEGATIVE: GET /pet/findByStatus с невалидным статусом → 400")
+    void findPetsByInvalidStatus() {
+        given()
+                .queryParam("status", "invalid_status_value")
+                .when()
+                .get("/pet/findByStatus")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    @DisplayName("NEGATIVE: POST /pet с пустым телом → 400/405")
+    void createPetWithEmptyBody() {
+        given()
+                .contentType(ContentType.JSON)
+                .body("{}")
+                .when()
+                .post("/pet")
+                .then()
+                .statusCode(anyOf(is(400), is(405)));
+    }
 }
